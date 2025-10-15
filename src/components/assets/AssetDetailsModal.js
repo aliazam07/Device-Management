@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Modal, Box, Typography, Button } from '@mui/material';
 
@@ -24,7 +23,6 @@ function AssetDetailsModal({ open, handleClose, asset }) {
             <Typography>Type: {asset.type}</Typography>
             <Typography>Serial Number: {asset.sn}</Typography>
             <Typography>Assigned To: {asset.assignedTo || 'N/A'}</Typography>
-            {/* Add more details as needed */}
           </>
         )}
         <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>

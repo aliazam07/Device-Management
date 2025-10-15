@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
-import { Box, Typography, Toolbar, TextField, Button, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import React, { useMemo, useState } from 'react';
+import { Box, Typography, Toolbar, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem, FormControl, InputLabel, Tooltip, ButtonGroup } from '@mui/material';
 import { motion } from 'framer-motion';
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ScheduleMaintenanceModal from './ScheduleMaintenanceModal';
 
-function Maintenance({ maintenance, handleSchedule, handleComplete, handleDelete }) {
+function Maintenance({ assets = [], maintenance, handleSchedule, handleComplete, handleDelete, handleReschedule }) {
   const [assetFilter, setAssetFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -21,6 +20,12 @@ function Maintenance({ maintenance, handleSchedule, handleComplete, handleDelete
     m.type.toLowerCase().includes(typeFilter.toLowerCase()) &&
     (statusFilter === '' || m.status === statusFilter)
   );
+
+  const snByAssetName = useMemo(() => {
+    const map = {};
+    assets.forEach(a => { map[a.name] = a.sn; });
+    return map;
+  }, [assets]);
 
   return (
     <Box component="main" sx={{ flexGrow: 1, p: 3, backgroundColor: 'background.default', color: 'text.primary' }}>
@@ -36,7 +41,7 @@ function Maintenance({ maintenance, handleSchedule, handleComplete, handleDelete
               <MenuItem value="">All</MenuItem>
               <MenuItem value="Scheduled">Scheduled</MenuItem>
               <MenuItem value="Completed">Completed</MenuItem>
-                 <MenuItem value="Completed">Under Maintenance</MenuItem>
+              <MenuItem value="Under Maintenance">Under Maintenance</MenuItem>
             </Select>
           </FormControl>
           <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpen} sx={{ backgroundColor: 'accent.main', color: 'black' }}>
@@ -49,6 +54,7 @@ function Maintenance({ maintenance, handleSchedule, handleComplete, handleDelete
           <TableHead>
             <TableRow>
               <TableCell sx={{ color: 'text.primary' }}>Asset</TableCell>
+              <TableCell sx={{ color: 'text.primary' }}>Asset SN</TableCell>
               <TableCell sx={{ color: 'text.primary' }}>Type</TableCell>
               <TableCell sx={{ color: 'text.primary' }}>Scheduled Date</TableCell>
               <TableCell sx={{ color: 'text.primary' }}>Status</TableCell>
@@ -59,20 +65,45 @@ function Maintenance({ maintenance, handleSchedule, handleComplete, handleDelete
             {filteredMaintenance.map(m => (
               <motion.tr key={m.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <TableCell sx={{ color: 'text.primary' }}>{m.asset}</TableCell>
+                <TableCell sx={{ color: 'text.primary' }}>{snByAssetName[m.asset] || 'N/A'}</TableCell>
                 <TableCell sx={{ color: 'text.primary' }}>{m.type}</TableCell>
-                <TableCell sx={{ color: 'text.primary' }}>{m.scheduledDate}</TableCell>
+                <TableCell sx={{ color: 'text.primary' }}>
+                  <TextField
+                    type="date"
+                    size="small"
+                    value={m.scheduledDate || ''}
+                    onChange={(e) => handleReschedule && handleReschedule(m.id, e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                    sx={{
+                      '& input': { color: 'text.primary' },
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: 'divider' },
+                      minWidth: 160,
+                    }}
+                  />
+                </TableCell>
                 <TableCell sx={{ color: 'text.primary' }}>{m.status}</TableCell>
                 <TableCell>
-                  {m.status === 'Scheduled' && <IconButton size="small" onClick={() => handleComplete(m.id)}><CheckCircleIcon sx={{ color: 'text.primary' }} /></IconButton>}
-                  <IconButton size="small"><EditIcon sx={{ color: 'text.primary' }} /></IconButton>
-                  <IconButton size="small" onClick={() => handleDelete(m.id)}><DeleteIcon sx={{ color: 'text.primary' }} /></IconButton>
+                  <ButtonGroup variant="text" size="small">
+                    {m.status === 'Scheduled' && (
+                      <Tooltip title="Mark as Completed">
+                        <Button aria-label="Complete" onClick={() => handleComplete(m.id)} startIcon={<CheckCircleIcon sx={{ color: 'text.primary' }} />} sx={{ color: 'text.primary' }}>
+                          Complete
+                        </Button>
+                      </Tooltip>
+                    )}
+                    <Tooltip title="Delete Maintenance">
+                      <Button aria-label="Delete" onClick={() => handleDelete(m.id)} startIcon={<DeleteIcon sx={{ color: 'text.primary' }} />} sx={{ color: 'text.primary' }}>
+                        Delete
+                      </Button>
+                    </Tooltip>
+                  </ButtonGroup>
                 </TableCell>
               </motion.tr>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
-      <ScheduleMaintenanceModal open={open} handleClose={handleClose} handleSchedule={handleSchedule} />
+      <ScheduleMaintenanceModal open={open} handleClose={handleClose} handleSchedule={handleSchedule} assets={assets} />
     </Box>
   );
 }

@@ -1,34 +1,48 @@
-
-import React, { useState } from 'react';
-import { ThemeProvider, CssBaseline, Box } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { ThemeProvider, CssBaseline, Box, Snackbar, Alert } from '@mui/material';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeContextProvider } from './ThemeContext';
-import Sidebar from './components/Sidebar';
+import Sidebar from './components/shared/Sidebar';
 import Dashboard from './components/Dashboard';
-import AssetManagement from './components/AssetManagement';
+import AssetManagement from './components/assets/AssetManagement';
 import Employees from './components/Employees';
-import Assignments from './components/Assignments';
-import Maintenance from './components/Maintenance';
-
-const initialAssets = [
-  { id: 1, name: 'Dell XPS 15', type: 'Laptop', sn: 'ABC12345', assignedTo: 'John Doe' },
-  { id: 2, name: 'Samsung Odyssey Monitor', type: 'Monitor', sn: 'DEF67890', assignedTo: null },
-  { id: 3, name: 'Logitech MX Master 3', type: 'Mouse', sn: 'GHI11223', assignedTo: 'Jane Smith' },
-  { id: 4, name: 'Apple MacBook Pro 16', type: 'Laptop', sn: 'JKL44556', assignedTo: null },
-];
-
-const initialMaintenance = [
-  { id: 1, asset: 'Dell XPS 15', type: 'Hardware Check', scheduledDate: '2023-11-01', status: 'Scheduled' },
-  { id: 2, asset: 'Samsung Odyssey Monitor', type: 'Screen Calibration', scheduledDate: '2023-10-20', status: 'Completed' },
-  { id: 3, asset: 'Logitech MX Master 3', type: 'Firmware Update', scheduledDate: '2023-11-10', status: 'Scheduled' },
-];
+import Assignments from './components/assignments/Assignments';
+import Maintenance from './components/maintenance/Maintenance';
+import { getAssets, getMaintenance } from './services/api';
 
 function App() {
-  const [assets, setAssets] = useState(initialAssets);
-  const [maintenance, setMaintenance] = useState(initialMaintenance);
+  const [assets, setAssets] = useState([]);
+  const [maintenance, setMaintenance] = useState([]);
+  const [assignSnackOpen, setAssignSnackOpen] = useState(false);
+  const [assignSnackMsg, setAssignSnackMsg] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const [a, m] = await Promise.all([getAssets(), getMaintenance()]);
+      if (mounted) {
+        setAssets(a);
+        setMaintenance(m);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const handleAssign = (assetId, employeeName) => {
-    setAssets(assets.map(asset => asset.id === assetId ? { ...asset, assignedTo: employeeName } : asset));
+    const today = new Date().toISOString().slice(0, 10);
+    setAssets(assets.map(asset => asset.id === assetId ? { ...asset, assignedTo: employeeName, assignmentDate: today } : asset));
+    setAssignSnackMsg(`Assigned to ${employeeName} successfully`);
+    setAssignSnackOpen(true);
+  };
+
+  const handleReturnAssignment = (assetId) => {
+    // Unassign asset when returned
+    setAssets(assets.map(asset => asset.id === assetId ? { ...asset, assignedTo: null } : asset));
+  };
+
+  const handleRevokeAssignment = (assetId) => {
+    // Unassign asset when revoked (same underlying change for now)
+    setAssets(assets.map(asset => asset.id === assetId ? { ...asset, assignedTo: null } : asset));
   };
 
   const handleAddAsset = (newAsset) => {
@@ -47,6 +61,10 @@ function App() {
     setMaintenance(maintenance.filter(m => m.id !== id));
   };
 
+  const handleReschedule = (id, newDate) => {
+    setMaintenance(maintenance.map(m => m.id === id ? { ...m, scheduledDate: newDate } : m));
+  };
+
   return (
     <ThemeContextProvider>
       {(theme) => (
@@ -59,9 +77,14 @@ function App() {
                 <Route path="/" element={<Dashboard assets={assets} maintenance={maintenance} />} />
                 <Route path="/assets" element={<AssetManagement assets={assets} handleAddAsset={handleAddAsset} handleAssign={handleAssign} />} />
                 <Route path="/employees" element={<Employees />} />
-                <Route path="/assignments" element={<Assignments />} />
-                <Route path="/maintenance" element={<Maintenance maintenance={maintenance} handleSchedule={handleSchedule} handleComplete={handleComplete} handleDelete={handleDelete} />} />
+                <Route path="/assignments" element={<Assignments assets={assets} handleReturn={handleReturnAssignment} handleRevoke={handleRevokeAssignment} />} />
+                <Route path="/maintenance" element={<Maintenance assets={assets} maintenance={maintenance} handleSchedule={handleSchedule} handleComplete={handleComplete} handleDelete={handleDelete} handleReschedule={handleReschedule} />} />
               </Routes>
+              <Snackbar open={assignSnackOpen} autoHideDuration={3000} onClose={() => setAssignSnackOpen(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+                <Alert onClose={() => setAssignSnackOpen(false)} severity="success" variant="filled" sx={{ width: '100%' }}>
+                  {assignSnackMsg}
+                </Alert>
+              </Snackbar>
             </Box>
           </Router>
         </ThemeProvider>

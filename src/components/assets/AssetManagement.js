@@ -21,19 +21,20 @@ function AssetManagement({ assets, handleAddAsset, handleAssign }) {
   );
 
   return (
-    <Box component="main" sx={{ flexGrow: 1, p: 3, backgroundColor: 'background.default', color: 'text.primary' }}>
+    <Box component="main" sx={{ flexGrow: 1, p: { xs: 2, md: 3 }, backgroundColor: 'background.default', color: 'text.primary' }}>
       <Toolbar />
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: { xs: 2, md: 3 } }}>
         <Typography variant="h4">
           Asset Management
         </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
           <TextField
             variant="outlined"
             placeholder="Search Assets..."
             onChange={(e) => setSearchQuery(e.target.value)}
             sx={{
-              mr: 2,
+              mr: 0,
+              width: { xs: '100%', sm: 260 },
               input: { color: 'text.primary' },
               '& .MuiOutlinedInput-root': {
                 '& fieldset': {
@@ -63,9 +64,9 @@ function AssetManagement({ assets, handleAddAsset, handleAssign }) {
           </Button>
         </Box>
       </Box>
-      <Grid container spacing={3}>
+      <Grid container alignItems="stretch" rowSpacing={3} columnSpacing={{ xs: 2, md: 3 }}>
         {filteredAssets.map((asset) => (
-          <Grid item xs={12} sm={6} md={4} key={asset.id}>
+          <Grid item xs={12} sm={6} md={4} lg={3} key={asset.id} sx={{ display: 'flex', minWidth: 0 }}>
             <AssetCard asset={asset} handleAssign={handleAssign} employees={employees} />
           </Grid>
         ))}

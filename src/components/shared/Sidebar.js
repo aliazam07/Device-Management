@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Switch, Box, Typography, useTheme } from '@mui/material';
 import { NavLink } from 'react-router-dom';
 import { Dashboard, Devices, People, Assignment, Build } from '@mui/icons-material';
-import { ThemeContext } from '../ThemeContext';
+import { ThemeContext } from '../../ThemeContext';
 
 const drawerWidth = 240;
 

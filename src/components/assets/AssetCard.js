@@ -17,30 +17,33 @@ function AssetCard({ asset, handleAssign, employees }) {
         sx={{
           backgroundColor: 'background.paper',
           border: '1px solid rgba(255, 255, 255, 0.12)',
-          borderRadius: 3, // Slightly increased border-radius for a softer look
-          boxShadow: '0 4px 15px rgba(0,0,0,0.2)', // More pronounced but softer shadow
-          display: 'flex', // Use flexbox for consistent height
-          flexDirection: 'column', // Stack content vertically
-          height: '100%', // Ensure all cards in a grid have the same height
-          transition: 'all 0.3s ease-in-out', // Smooth hover effect
+          borderRadius: 3,
+          boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          width: '100%',
+          minWidth: 0,
+          transition: 'all 0.3s ease-in-out',
           '&:hover': {
-            boxShadow: `0 6px 20px accent.glow`, // Enhanced glow on hover
+            boxShadow: `0 6px 20px accent.glow`,
             borderColor: 'accent.main',
-            transform: 'translateY(-3px)', // Slight lift effect on hover
+            transform: 'translateY(-3px)',
           },
         }}
       >
         <CardContent
           sx={{
-            flexGrow: 1, // Allows content to fill available space, pushing footer down
+            flexGrow: 1,
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'space-between', // Distribute space between main content and actions
-            padding: 3, // Increased padding for more breathing room inside the card
+            justifyContent: 'space-between',
+            p: { xs: 2, md: 3 },
+            minWidth: 0,
           }}
         >
           {/* Top section: Asset Name, Type, SN, and Icon */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2, mb: 2, minWidth: 0 }}>
             <Box>
               <Typography variant="h6" component="div" sx={{ mb: 0.5 }}>
                 {asset.name}
@@ -52,18 +55,18 @@ function AssetCard({ asset, handleAssign, employees }) {
                 SN: {asset.sn}
               </Typography>
             </Box>
-            <LaptopIcon sx={{ fontSize: 40, color: 'primary.main' }} /> {/* Larger icon, using primary color */}
+            <LaptopIcon sx={{ fontSize: 40, color: 'primary.main' }} />
           </Box>
 
           {/* Status Indicator */}
-          <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, mb: 3 }}> {/* Increased vertical margin */}
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, mb: 3 }}>
             <Box
               sx={{
-                width: 12, // Slightly larger status dot
+                width: 12,
                 height: 12,
                 borderRadius: '50%',
-                backgroundColor: asset.assignedTo ? 'warning.main' : 'success.main', // Using theme colors for better consistency
-                mr: 1.5, // Increased margin to the right of the dot
+                backgroundColor: asset.assignedTo ? 'warning.main' : 'success.main',
+                mr: 1.5,
               }}
             />
             <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium' }}>
@@ -72,18 +75,18 @@ function AssetCard({ asset, handleAssign, employees }) {
           </Box>
 
           {/* Action Buttons */}
-          <Box sx={{ mt: 'auto', display: 'flex', gap: 1.5 }}> {/* 'auto' margin pushes to bottom, added gap */}
+          <Box sx={{ mt: 'auto', display: 'flex', gap: 1.5 }}>
             <Button
               variant="contained"
-              size="medium" // Slightly larger buttons
+              size="medium"
               sx={{
                 backgroundColor: 'accent.main',
-                color: 'text.primary', // Ensure text color contrasts well in both themes
-                flexGrow: 1, // Allow buttons to grow and fill space
-                py: 1, // Vertical padding for button
-                borderRadius: 2, // Consistent border radius
+                color: 'text.primary',
+                flexGrow: 1,
+                py: 1,
+                borderRadius: 2,
                 '&:hover': {
-                  backgroundColor: 'accent.main', // Keep background consistent on hover if desired
+                  backgroundColor: 'accent.main',
                   opacity: 0.9,
                 }
               }}
@@ -93,15 +96,15 @@ function AssetCard({ asset, handleAssign, employees }) {
             </Button>
             <Button
               variant="outlined"
-              size="medium" // Slightly larger buttons
+              size="medium"
               sx={{
-                color: 'text.primary', // Ensure text color contrasts well
-                borderColor: 'text.secondary', // Use a theme color for the border
-                flexGrow: 1, // Allow buttons to grow and fill space
-                py: 1, // Vertical padding for button
-                borderRadius: 2, // Consistent border radius
+                color: 'text.primary',
+                borderColor: 'text.secondary',
+                flexGrow: 1,
+                py: 1,
+                borderRadius: 2,
                 '&:hover': {
-                  borderColor: 'primary.main', // Highlight border on hover
+                  borderColor: 'primary.main',
                   color: 'primary.main',
                 }
               }}
@@ -110,16 +113,16 @@ function AssetCard({ asset, handleAssign, employees }) {
               View Details
             </Button>
             <IconButton
-              size="medium" // Consistent size with buttons
+              size="medium"
               onClick={() => setOpenQr(true)}
               sx={{
-                color: 'primary.main', // Use theme color for icon button
+                color: 'primary.main',
                 '&:hover': {
-                  backgroundColor: 'action.hover', // Theme hover effect
+                  backgroundColor: 'action.hover',
                 }
               }}
             >
-              <QrCodeIcon sx={{ fontSize: 28 }} /> {/* Larger QR icon */}
+              <QrCodeIcon sx={{ fontSize: 28 }} />
             </IconButton>
           </Box>
         </CardContent>
