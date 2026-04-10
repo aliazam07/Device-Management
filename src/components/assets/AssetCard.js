@@ -1,134 +1,134 @@
 import React, { useState } from 'react';
-import { Card, CardContent, Typography, Box, Button, IconButton } from '@mui/material';
+import { Card, CardContent, Typography, Box, Button, IconButton, Chip, useTheme } from '@mui/material';
 import LaptopIcon from '@mui/icons-material/Laptop';
-import QrCodeIcon from '@mui/icons-material/QrCode';
+import QrCodeIcon from '@mui/icons-material/QrCode2';
 import QrCodeModal from './QrCodeModal';
 import AssignAssetModal from './AssignAssetModal';
 import AssetDetailsModal from './AssetDetailsModal';
+import { motion } from 'framer-motion';
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } },
+};
 
 function AssetCard({ asset, handleAssign, employees }) {
   const [openQr, setOpenQr] = useState(false);
   const [openAssign, setOpenAssign] = useState(false);
   const [openDetails, setOpenDetails] = useState(false);
+  const theme = useTheme();
+  const isAssigned = !!asset.assignedTo;
 
   return (
     <>
-      <Card
-        sx={{
-          backgroundColor: 'background.paper',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
-          borderRadius: 3,
-          boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100%',
-          width: '100%',
-          minWidth: 0,
-          transition: 'all 0.3s ease-in-out',
-          '&:hover': {
-            boxShadow: `0 6px 20px accent.glow`,
-            borderColor: 'accent.main',
-            transform: 'translateY(-3px)',
-          },
-        }}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+        whileHover={{ y: -4, transition: { duration: 0.15 } }}
+        style={{ height: '100%', width: '100%' }}
       >
-        <CardContent
+        <Card
           sx={{
-            flexGrow: 1,
+            height: '100%',
+            width: '100%',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'space-between',
-            p: { xs: 2, md: 3 },
-            minWidth: 0,
+            transition: 'box-shadow 0.2s ease',
+            '&:hover': {
+              boxShadow: theme.palette.mode === 'dark'
+                ? `0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px ${theme.palette.primary.main}40`
+                : `0 8px 32px rgba(0,0,0,0.12), 0 0 0 1px ${theme.palette.primary.main}30`,
+            },
           }}
         >
-          {/* Top section: Asset Name, Type, SN, and Icon */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2, mb: 2, minWidth: 0 }}>
-            <Box>
-              <Typography variant="h6" component="div" sx={{ mb: 0.5 }}>
+          <CardContent sx={{ p: 2.5, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+            {/* Header */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+              <Box
+                sx={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: '12px',
+                  backgroundColor: `${theme.palette.primary.main}18`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <LaptopIcon sx={{ fontSize: 22, color: theme.palette.primary.main }} />
+              </Box>
+              <Chip
+                label={isAssigned ? 'Assigned' : 'Available'}
+                size="small"
+                sx={{
+                  fontWeight: 600,
+                  fontSize: '0.7rem',
+                  backgroundColor: isAssigned
+                    ? `${theme.palette.warning.main}20`
+                    : `${theme.palette.success.main}20`,
+                  color: isAssigned ? theme.palette.warning.main : theme.palette.success.main,
+                  border: `1px solid ${isAssigned ? theme.palette.warning.main : theme.palette.success.main}40`,
+                }}
+              />
+            </Box>
+
+            {/* Info */}
+            <Box sx={{ flexGrow: 1, mb: 2 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.25, color: 'text.primary' }}>
                 {asset.name}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.25 }}>
-                Type: {asset.type}
+              <Typography variant="body2" sx={{ color: 'text.secondary', mb: 0.25 }}>
+                {asset.type}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontFamily: 'monospace', letterSpacing: '0.05em' }}>
                 SN: {asset.sn}
               </Typography>
+              {isAssigned && (
+                <Typography variant="caption" sx={{ display: 'block', mt: 1, color: 'text.secondary' }}>
+                  → {asset.assignedTo}
+                </Typography>
+              )}
             </Box>
-            <LaptopIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-          </Box>
 
-          {/* Status Indicator */}
-          <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, mb: 3 }}>
-            <Box
-              sx={{
-                width: 12,
-                height: 12,
-                borderRadius: '50%',
-                backgroundColor: asset.assignedTo ? 'warning.main' : 'success.main',
-                mr: 1.5,
-              }}
-            />
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium' }}>
-              {asset.assignedTo ? `Assigned To: ${asset.assignedTo}` : 'Available'}
-            </Typography>
-          </Box>
+            {/* Actions */}
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => setOpenAssign(true)}
+                sx={{ flexGrow: 1, py: 0.75, fontSize: '0.8rem' }}
+              >
+                Assign
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setOpenDetails(true)}
+                sx={{ flexGrow: 1, py: 0.75, fontSize: '0.8rem' }}
+              >
+                Details
+              </Button>
+              <IconButton
+                size="small"
+                onClick={() => setOpenQr(true)}
+                sx={{
+                  color: 'text.secondary',
+                  border: `1px solid ${theme.palette.divider}`,
+                  borderRadius: '8px',
+                  p: 0.75,
+                  '&:hover': { color: theme.palette.primary.main, borderColor: theme.palette.primary.main },
+                }}
+              >
+                <QrCodeIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Box>
+          </CardContent>
+        </Card>
+      </motion.div>
 
-          {/* Action Buttons */}
-          <Box sx={{ mt: 'auto', display: 'flex', gap: 1.5 }}>
-            <Button
-              variant="contained"
-              size="medium"
-              sx={{
-                backgroundColor: 'accent.main',
-                color: 'text.primary',
-                flexGrow: 1,
-                py: 1,
-                borderRadius: 2,
-                '&:hover': {
-                  backgroundColor: 'accent.main',
-                  opacity: 0.9,
-                }
-              }}
-              onClick={() => setOpenAssign(true)}
-            >
-              Assign
-            </Button>
-            <Button
-              variant="outlined"
-              size="medium"
-              sx={{
-                color: 'text.primary',
-                borderColor: 'text.secondary',
-                flexGrow: 1,
-                py: 1,
-                borderRadius: 2,
-                '&:hover': {
-                  borderColor: 'primary.main',
-                  color: 'primary.main',
-                }
-              }}
-              onClick={() => setOpenDetails(true)}
-            >
-              View Details
-            </Button>
-            <IconButton
-              size="medium"
-              onClick={() => setOpenQr(true)}
-              sx={{
-                color: 'primary.main',
-                '&:hover': {
-                  backgroundColor: 'action.hover',
-                }
-              }}
-            >
-              <QrCodeIcon sx={{ fontSize: 28 }} />
-            </IconButton>
-          </Box>
-        </CardContent>
-      </Card>
       <QrCodeModal open={openQr} handleClose={() => setOpenQr(false)} asset={asset} />
-      <AssignAssetModal open={openAssign} handleClose={() => setOpenAssign(false)} handleAssign={(employee) => handleAssign(asset.id, employee)} employees={employees} />
+      <AssignAssetModal open={openAssign} handleClose={() => setOpenAssign(false)} handleAssign={(emp) => handleAssign(asset.id, emp)} employees={employees} />
       <AssetDetailsModal open={openDetails} handleClose={() => setOpenDetails(false)} asset={asset} />
     </>
   );

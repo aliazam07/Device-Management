@@ -1,81 +1,114 @@
-
-import React, { useEffect, useState } from 'react';
-import { Modal, Box, Typography, TextField, Button } from '@mui/material';
+﻿import React, { useEffect, useState } from "react";
+import {
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, Button, Box, Typography,
+} from "@mui/material";
 
 function AddEmployeeModal({ open, handleClose, handleAddEmployee, editingEmployee, handleUpdateEmployee }) {
-  const [employeeId, setEmployeeId] = useState('');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [department, setDepartment] = useState('');
-  const [contactNumber, setContactNumber] = useState('');
-  const [jobTitle, setJobTitle] = useState('');
+  const [form, setForm] = useState({
+    employeeId: "", name: "", email: "", department: "",
+    contactNumber: "", jobTitle: "", assetCount: 0,
+  });
 
   useEffect(() => {
     if (editingEmployee) {
-      setEmployeeId(editingEmployee.employeeId || '');
-      setName(editingEmployee.name || '');
-      setEmail(editingEmployee.email || '');
-      setDepartment(editingEmployee.department || '');
-      setContactNumber(editingEmployee.contactNumber || '');
-      setJobTitle(editingEmployee.jobTitle || '');
+      setForm({
+        employeeId: editingEmployee.employeeId || "",
+        name: editingEmployee.name || "",
+        email: editingEmployee.email || "",
+        department: editingEmployee.department || "",
+        contactNumber: editingEmployee.contactNumber || "",
+        jobTitle: editingEmployee.jobTitle || "",
+        assetCount: editingEmployee.assets?.length || 0,
+      });
     } else {
-      setEmployeeId('');
-      setName('');
-      setEmail('');
-      setDepartment('');
-      setContactNumber('');
-      setJobTitle('');
+      setForm({ employeeId: "", name: "", email: "", department: "", contactNumber: "", jobTitle: "", assetCount: 0 });
     }
   }, [editingEmployee, open]);
 
+  const set = (field) => (e) => setForm(prev => ({ ...prev, [field]: e.target.value }));
+
   const handleSubmit = () => {
-    if (!employeeId || !name || !email || !department) {
-      return;
-    }
-    const payload = {
-      employeeId,
-      name,
-      email,
-      department,
-      contactNumber,
-      jobTitle,
-    };
+    if (!form.employeeId || !form.name || !form.email || !form.department) return;
+    const count = parseInt(form.assetCount, 10) || 0;
+    const assets = editingEmployee?.assets?.length
+      ? editingEmployee.assets
+      : Array.from({ length: count }, (_, i) => ({
+          name: `Asset ${i + 1}`,
+          sn: `SN-${form.employeeId}-${i + 1}`,
+          assignedDate: new Date().toISOString().slice(0, 10),
+        }));
+    const payload = { employeeId: form.employeeId, name: form.name, email: form.email, department: form.department, contactNumber: form.contactNumber, jobTitle: form.jobTitle, assets };
     if (editingEmployee && handleUpdateEmployee) {
       handleUpdateEmployee({ ...editingEmployee, ...payload });
     } else if (handleAddEmployee) {
-      handleAddEmployee({ ...payload, assets: [] });
+      handleAddEmployee(payload);
     }
     handleClose();
   };
 
   return (
-    <Modal open={open} onClose={handleClose}>
-      <Box sx={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 400,
-        bgcolor: 'background.paper',
-        border: '2px solid #000',
-        boxShadow: 24,
-        p: 4,
-        borderRadius: 2,
-      }}>
-        <Typography variant="h6" component="h2">{editingEmployee ? 'Edit Employee' : 'Add New Employee'}</Typography>
-        <TextField fullWidth label="Employee ID" margin="normal" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} />
-        <TextField fullWidth label="Name" margin="normal" value={name} onChange={(e) => setName(e.target.value)} />
-        <TextField fullWidth label="Email" margin="normal" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <TextField fullWidth label="Department" margin="normal" value={department} onChange={(e) => setDepartment(e.target.value)} />
-        <TextField fullWidth label="Contact Number" margin="normal" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} />
-        <TextField fullWidth label="Job Title" margin="normal" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} />
-        
-        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSubmit} variant="contained" sx={{ ml: 2 }}>Save</Button>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{ pb: 1 }}>
+        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+          {editingEmployee ? "Edit Employee" : "Add New Employee"}
+        </Typography>
+        <Typography variant="caption" sx={{ color: "text.secondary" }}>
+          {editingEmployee ? "Update employee information" : "Fill in the details to add a new team member"}
+        </Typography>
+      </DialogTitle>
+
+      <DialogContent sx={{ pt: 2 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+
+          {/* Row 1: Full Name - full width */}
+          <TextField
+            fullWidth
+            label="Full Name"
+            required
+            size="small"
+            value={form.name}
+            onChange={set("name")}
+          />
+
+          {/* Row 2: Employee ID + Email */}
+          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+            <TextField fullWidth label="Employee ID" required size="small" value={form.employeeId} onChange={set("employeeId")} />
+            <TextField fullWidth label="Email Address" required size="small" type="email" value={form.email} onChange={set("email")} />
+          </Box>
+
+          {/* Row 3: Department + Job Title */}
+          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+            <TextField fullWidth label="Department" required size="small" value={form.department} onChange={set("department")} />
+            <TextField fullWidth label="Job Title" size="small" value={form.jobTitle} onChange={set("jobTitle")} />
+          </Box>
+
+          {/* Row 4: Contact Number + No. of Assets */}
+          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+            <TextField fullWidth label="Contact Number" size="small" value={form.contactNumber} onChange={set("contactNumber")} />
+            <TextField
+              fullWidth
+              label="No. of Assets"
+              size="small"
+              type="number"
+              value={form.assetCount}
+              onChange={set("assetCount")}
+              disabled={!!editingEmployee}
+              slotProps={{ htmlInput: { min: 0, max: 100 } }}
+              helperText={editingEmployee ? "Manage from Assignments" : ""}
+            />
+          </Box>
+
         </Box>
-      </Box>
-    </Modal>
+      </DialogContent>
+
+      <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+        <Button onClick={handleClose} variant="outlined" sx={{ minWidth: 90 }}>Cancel</Button>
+        <Button onClick={handleSubmit} variant="contained" sx={{ minWidth: 90 }}>
+          {editingEmployee ? "Update" : "Add Employee"}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }
 
